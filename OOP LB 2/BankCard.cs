@@ -60,7 +60,7 @@ namespace OOP_LB_2
         }
         public void withdrawMoney(Double amountOfMoney)
         {
-            this.amountOfMoney -= amountOfMoney;
+            this.amountOfMoney = Math.Round((this.amountOfMoney - amountOfMoney),2);
         }
     }
 }

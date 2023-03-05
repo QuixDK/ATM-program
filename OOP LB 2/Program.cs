@@ -7,6 +7,7 @@
         public static Bank currentBank;
         public static BankClient currentClient;
         public static ATM currentATM;
+        public static Session currentSession;
         public static int atmId = 0; 
         public static void Main(string[] args)
         {
@@ -31,104 +32,354 @@
                             createNewATM();
                             break;
                         case 5:
-                            withdrawMoney();
+                            if (ATMs.Count == 0)
+                            {
+                                throw new ATMCountException("Для начала нужно создать хотя бы один банкомат");
+                            }
+                            ATMService();
+                            clearConsole();
+                            setATMMenu();
                             break;
                         case 6:
-                            putMoney();
-                            break;
-                        case 7:
-                            checkBalance();
-                            break;
-                        case 8:
-                            remittance();
-                            break;
-                        case 9:
-                            repayALoan();
-                            break;
-                        case 10:
                             showClientCards();
                             break;
                         case 0:
                             clearConsole();
+                            sendMenu();
                             break;
                     }
                 }
+                catch (ATMCountException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                catch (InvalidSessionException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Неправильная команда");
+                    Console.WriteLine("Неверная команда");
                 }
+
+            }
+            
+        }
+        public static void sendMenu()
+        {
+            Console.WriteLine("Меню банка:");
+            Console.WriteLine("Введите 1 чтобы создать новый банк");
+            Console.WriteLine("Введите 2 чтобы создать нового клиента");
+            Console.WriteLine("Введите 3 чтобы выпустить новую карту");
+            Console.WriteLine("Введите 4 чтобы создать новый банкомат");
+            Console.WriteLine("Введите 5 чтобы перейти в меню банкомата");
+            Console.WriteLine("Введите 6 чтобы посмотреть карты клиента");
+        }
+        public static void createNewBank()
+        {
+            try
+            {
+                Console.WriteLine("Введите название банка");
+                String bankName = Console.ReadLine();
+                foreach (Bank bank in banks)
+                {
+                    if (bank.getName().Equals(bankName))
+                    {
+                        throw new BankNameException("Банк с таким именем уже существует");
+                    }
+                }
+                Bank newBank = new Bank(bankName);
+                banks.Add(newBank);
+                Console.WriteLine("Банк успешно создан");
+            }
+            catch (BankNameException ex)
+            {
+                Console.WriteLine("Банк с таким именем уже существует");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Не удалось добавить банк");
+            }
+        }
+        public static void createNewClient()
+        {
+            try
+            {
+                if (banks.Count == 0)
+                {
+                    throw new BankCountException("Сначала нужно создать хотя бы один банк");
+                }
+            
+                initBank();
+                Console.WriteLine("Введите имя клиента");
+
+                String fullName = Console.ReadLine();
+
+                if (fullName == null | fullName.Equals("") | fullName.Equals(" "))
+                {
+                    throw new FullNameException("Недопустимое имя пользователя");
+                }
+
+                Console.WriteLine("Введите номер паспорта клиента");
+
+                int passportNumber = Convert.ToInt32(Console.ReadLine());
+
+                foreach (BankClient client in currentBank.getClientsList())
+                {
+                    if (client.getPassportNumber() == passportNumber)
+                    {
+                        throw new PassportNumberException("Клиент с таким паспортом уже существует");
+                    }
+                }
+
+                List<BankCard> cards = new List<BankCard>();
+
+                currentBank.addClient(fullName, cards, DateTime.Now, passportNumber, 0);
+
+                Console.WriteLine("Клиент успешно добавлен");
+            }
+            
+            catch (BankCountException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (FullNameException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (PassportNumberException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine("Недопустимый номер паспорта");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+
+        public static void createNewBankCard()
+        {
+            Random rnd = new Random();
+            try
+            {
+                if (banks.Count == 0)
+                {
+                    throw new BankCountException("Сначала нужно создать хотя бы один банк");
+                }
+
+                initBank();
+                if (currentBank.getClientsList().Count == 0)
+                {
+                    throw new ClientCountException("Чтобы создать карту, нужен хотя бы один клиент банка");
+                }
+
+                Console.WriteLine("Выберите будующего владельца карты из списка клиентов банка");
+                initClient();
+                Console.WriteLine("Введите номер для новой карты");
+                int cardNumber = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine("Введите pinCode для новой карты");
+                int pinCode = Convert.ToInt32(Console.ReadLine());
+                int CVV = Convert.ToInt32(Math.Round((rnd.NextDouble() * 1000)));
+                Double amountOfMoney = Math.Round((rnd.NextDouble() * 1000), 2);
+                BankCard bankCard = currentBank.createCard(currentClient, cardNumber, Card.Types.Visa, CVV, amountOfMoney, pinCode);
+                if (bankCard == null)
+                {
+                    throw new BankCardNumberException("Карта с таким номером уже существует");
+                }
+                currentClient.addBankCard(bankCard);
+                Console.WriteLine("Карта успешно добавлена");
                 
-                
+
+            }
+            catch (BankCountException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            catch (ClientCountException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (BankCardNumberException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine("Неверный формат");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+        public static void createNewATM()
+        {
+            try
+            {
+                if (banks.Count == 0)
+                {
+                    throw new BankCountException("Сначала нужно создать хотя бы один банк");
+                }
+                initBank();
+                ATM aTM = new ATM(currentBank, atmId);
+                ATMs.Add(aTM);
+                Console.WriteLine("Банкомат успешно создан");
+                atmId++;
+            }
+            catch (BankCountException ex)
+            {
+                Console.WriteLine(ex.Message);
             }
             
         }
 
         public static Session ATMService()
         {
-            if (ATMs.Count != 0)
+            try
             {
-                initATM();
-                Console.WriteLine("Введите номер карты");
-                int cardNumber = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine("Введите pin");
-                int pinCode = Convert.ToInt32(Console.ReadLine());
-                Session currentSession = currentATM.startNewSession(cardNumber, pinCode);
-                if (currentSession.isActive())
+                if (ATMs.Count == 0)
                 {
-                    return currentSession;
+                    throw new ATMCountException("Для начала нужно создать хотя бы один банкомат");
                 }
                 
-
             }
-            else Console.WriteLine("Для снятия денег нужен хотя бы один банкомат");
-            return null;
+            catch (ATMCountException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            initATM();
+            Console.WriteLine("Введите номер карты");
+            int cardNumber = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Введите pin");
+            int pinCode = Convert.ToInt32(Console.ReadLine());
+            currentSession = currentATM.startNewSession(cardNumber, pinCode);
+            if (!currentSession.isActive())
+            {
+                throw new InvalidSessionException("Не удалось запустить новую сессию");
+            }
+            return currentSession;
+
         }
-        
+        public static void showClientCards()
+        {
+            try
+            {
+                if (banks.Count == 0)
+                {
+                    throw new BankCountException("Сначала нужно создать хотя бы один банк");
+                }
+                initBank();
+                if (currentBank.getClientsList().Count == 0)
+                {
+                    throw new ClientCountException("Чтобы узнать список карт, нужен хотя бы один клиент банка");
+                }
+                Console.WriteLine("Выберите клиента из списка клиентов банка");
+                initClient();
+                int i = 0;
+                List<BankCard> cards = currentClient.getCards();
+                if (cards.Count != 0)
+                {
+                    foreach (BankCard card in currentClient.getCards())
+                    {
+                        Console.WriteLine(i + " Номер карты : " + card.getCardNumber());
+                        i++;
+                    }
+                }
+                else Console.WriteLine("У клиента не обнаружены банковские карты");
+            }
+            catch (BankCountException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (ClientCountException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        public static void getATMMenu()
+        {
+            Console.WriteLine("Меню банкомата:");
+            Console.WriteLine("Введите 1 чтобы снять деньги");
+            Console.WriteLine("Введите 2 чтобы положить деньги");
+            Console.WriteLine("Введите 3 чтобы узнать баланс");
+            Console.WriteLine("Введите 4 чтобы сделать денежный перевод с карты на карту");
+            Console.WriteLine("Введите 5 чтобы узнать количество доступных купюр для выдачи");
+            Console.WriteLine("Введите 6 чтобы выйти из банкомата");
+        }
+
         public static void withdrawMoney()
         {
-            if (ATMs.Count != 0)
+            try
             {
-                currentATM.withdrawMoney(ATMService());
+                Session session = currentSession;
+                int amount;
+                string val;
+                if (session.isActive())
+                {
+                    do
+                    {
+                        Console.Write("Введите требуемую сумму: ");
+                        val = Console.ReadLine();
+                        if (val.Length == 0) return;
+
+                    } while (!int.TryParse(val, out amount));
+                    try
+                    {
+                        Dictionary<int, int> result = currentATM.Withdraw(session, amount);
+                        Console.Write("{0} = ", amount);
+                        foreach (KeyValuePair<int, int> kvp in result)
+                        {
+                            Console.WriteLine("{1} купюр по {0} ", kvp.Key, kvp.Value);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(ex.Message);
+                        Console.ResetColor();
+                    }
+                    Console.WriteLine();
+                }
             }
-            else Console.WriteLine("Для снятия денег нужен хотя бы один банкомат");
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         }
         public static void putMoney()
         {
-            if (ATMs.Count != 0)
-            {
-                Session session = ATMService();
-                currentATM.putMoney(session);
-            }
-            else Console.WriteLine("Для пополнения денег нужен хотя бы один банкомат");
+            Session session = currentSession;
+            currentATM.putMoney(session);
         }
         public static void checkBalance()
         {
-            if (ATMs.Count != 0)
-            {
-                Session session = ATMService();
-                currentATM.viewBalance(session);
-            }
-            else Console.WriteLine("Для проверки баланса нужен хотя бы один банкомат");
+            Session session = currentSession;
+            currentATM.viewBalance(session);
         }
         public static void remittance()
         {
-            if (ATMs.Count != 0)
-            {
-                Session session = ATMService();
-                currentATM.remittance(session);
-            }
-            else Console.WriteLine("Для перевода нужен хотя бы один банкомат");
+            Session session = currentSession;
+            currentATM.remittance(session);
         }
-        public static void repayALoan()
+        public static void getAvailableBanknots()
         {
-            if (ATMs.Count != 0)
-            {
-                initATM();
-                currentATM.getAvailableBanknots();
-            }
-            else Console.WriteLine("Для снятия денег нужен хотя бы один банкомат");
+            initATM();
+            currentATM.getAvailableBanknots();
         }
-        
 
         public static void initATM()
         {
@@ -150,97 +401,10 @@
                 i++;
             }
         }
-
         public static void clearConsole()
         {
             Console.Clear();
-            sendMenu();
-        }
-        public static void createNewClient()
-        {
-            if (banks.Count != 0)
-            {
-                try
-                {
-                    Console.WriteLine("Введите полное имя клиента");
-                    String fullName = Console.ReadLine();
-                    Console.WriteLine("Введите номер паспорта клиента");
-                    int passportNumber = Convert.ToInt32(Console.ReadLine());
-                    List<BankCard> cards = new List<BankCard>();
-                    initBank();
-                    currentBank.addClient(fullName, cards, DateTime.Now, passportNumber, 0);
-                    Console.WriteLine("Клиент успешно добавлен");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Не удалось добавить клиента");
-                }
-            }
-            else Console.WriteLine("Сначала нужно создать хотя бы один банк");
-
-        }
-
-        public static void createNewATM()
-        {
-            initBank();
-            ATM aTM = new ATM(currentBank, atmId);
-            ATMs.Add(aTM);
-            Console.WriteLine("Банкомат успешно создан");
-            atmId++;
-        }
-
-        public static void showClientCards()
-        {
-            initBank();
-            Console.WriteLine("Выберите клиента из списка клиентов банка");
-            initClient();
-            int i = 0;
-            List<BankCard> cards = currentClient.getCards();
-            if (cards.Count != 0)
-            {
-                foreach (BankCard card in currentClient.getCards())
-                {
-                    Console.WriteLine(i + " Номер карты : " + card.getCardNumber());
-                    i++;
-                }
-            }
-            else Console.WriteLine("У клиента не обнаружены банковские карты");
-        }
-
-        public static void createNewBankCard()
-        {
-            
-            if (banks.Count != 0)
-            {
-                
-                initBank();
-                if (currentBank.getClientsList().Count != 0)
-                {
-                    Console.WriteLine("Выберите владельца карты из списка клиентов банка");
-                    initClient();
-                    Console.WriteLine("Введите номер для новой карты");
-                    int cardNumber = Convert.ToInt32(Console.ReadLine());
-                    Console.WriteLine("Введите pinCode для новой карты");
-                    Random rnd = new Random();
-                    int pinCode = Convert.ToInt32(Console.ReadLine());
-                    int CVV = Convert.ToInt32(Math.Round((rnd.NextDouble() * 1000)));
-                    
-                    Double amountOfMoney = Math.Round((rnd.NextDouble() * 1000), 2);
-                    BankCard bankCard = currentBank.createCard(currentClient, cardNumber, Card.Types.Visa, CVV, amountOfMoney, pinCode);
-                    if (bankCard != null)
-                    {
-                        currentClient.addBankCard(bankCard);
-                        Console.WriteLine("Карта успешно добавлена");
-                    }
-                    else Console.WriteLine("Карта с таким номером уже существует");
-
-                }
-                else Console.WriteLine("Чтобы создать карту, нужен хотя бы один клиент банка");
-
-            }
-            else Console.WriteLine("Нужно создать хотя бы один банк");
-        }
-       
+        }    
         public static void initClient()
         {
             int i = 0;
@@ -280,30 +444,95 @@
                 }
                 i++;
             }
-        }
-
-        public static void createNewBank()
+        } 
+        
+        public static void setATMMenu()
         {
-            Console.WriteLine("Введите название банка");
-            Bank newBank = new Bank(Console.ReadLine());
-            banks.Add(newBank);
-            Console.WriteLine("Банк успешно создан");
-        }
+            bool isTrue = true;
+            getATMMenu();
 
-        public static void sendMenu()
-        {
-            Console.WriteLine("Введите 1 чтобы создать новый банк");
-            Console.WriteLine("Введите 2 чтобы создать нового клиента");
-            Console.WriteLine("Введите 3 чтобы выпустить новую карту");
-            Console.WriteLine("Введите 4 чтобы создать новый банкомат");
-            Console.WriteLine("Введите 5 чтобы снять деньги");
-            Console.WriteLine("Введите 6 чтобы положить деньги");
-            Console.WriteLine("Введите 7 чтобы узнать баланс");
-            Console.WriteLine("Введите 8 чтобы сделать денежный перевод с карты на карту");
-            Console.WriteLine("Введите 9 чтобы узнать количество доступных купюр для выдачи");
-            Console.WriteLine("Введите 10 чтобы посмотреть карты клиента");
+                while (isTrue)
+                {
+                try
+                {
+                    int userResponse = Convert.ToInt32(Console.ReadLine());
+                    switch (userResponse)
+                    {
+                        case 1:
+                            withdrawMoney();
+                            break;
+                        case 2:
+                            putMoney();
+                            break;
+                        case 3:
+                            checkBalance();
+                            break;
+                        case 4:
+                            remittance();
+                            break;
+                        case 5:
+                            getAvailableBanknots();
+                            break;
+                        case 6:
+                            isTrue = false;
+                            clearConsole();
+                            currentATM.stopNewSession(currentSession);
+                            sendMenu();
+                            break;
+                        case 0:
+                            clearConsole();
+                            getATMMenu();
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Неверная команда");
+                }
+            }
+
         }
-    
     }
+    class BankNameException : Exception
+    {
+        public BankNameException(string message)
+            : base(message) { }
+    }
+    class PassportNumberException : Exception
+    {
+        public PassportNumberException(string message)
+            : base(message) { }
+    }
+    class BankCountException : Exception
+    {
+        public BankCountException(string message)
+            : base(message) { }
+    }
+    class FullNameException : Exception
+    {
+        public FullNameException(string message)
+            : base(message) { }
+    }
+    class ClientCountException : Exception
+    {
+        public ClientCountException(string message)
+            : base(message) { }
+    }
+    class BankCardNumberException : Exception
+    {
+        public BankCardNumberException(string message)
+            : base(message) { }
+    }
+    class ATMCountException : Exception
+    {
+        public ATMCountException(string message)
+            : base(message) { }
+    }
+    class InvalidSessionException : Exception
+    {
+        public InvalidSessionException(string message)
+            : base(message) { }
+    }
+    
 }
 

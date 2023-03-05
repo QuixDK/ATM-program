@@ -22,6 +22,7 @@ namespace OOP_LB_2
             this.amountOfMoney = amountOfMoney;
         }
 
+
         public String getFullName()
         {
             return fullName;

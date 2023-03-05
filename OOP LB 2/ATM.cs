@@ -58,15 +58,17 @@ namespace OOP_LB_2
             {
                 Console.WriteLine("Неверный pin");
                 stopNewSession(session);
+                return session;
 
             }
             else
             {
                 Console.WriteLine(checkCVV(session.getCardNumber(), session.getPinCode()));
                 stopNewSession(session);
+                return session;
             }
             
-            return session;
+            
         }
 
         public void stopNewSession(Session session)
@@ -92,152 +94,73 @@ namespace OOP_LB_2
                             card.addMoney(amountOfMoney);
                             Console.WriteLine("Выбранная карта действительна, перевод осуществлен");
                             session.getBankCard().withdrawMoney(amountOfMoney);
-                            stopNewSession(session);
                         }
                     }
                 }
                 else Console.WriteLine("Недостаточно денег для перевода");
-                stopNewSession(session);
             }
 
         }
 
-        public void withdrawMoney(Session session)
+        public Dictionary<int, int> Withdraw(Session session, int amountOfMoney)
         {
-            if (session.isActive())
+            Dictionary<int, int> r = new Dictionary<int, int>();
+            if (amountOfMoney % 50 != 0)
             {
-                
-                
-                Console.WriteLine("Введите сумму для снятия");
-                int amountOfMoney = Convert.ToInt32(Console.ReadLine());
-                try
-                {
-                    if (session.getBankCard().getAmountOfMoney() >= amountOfMoney)
-                    {
-      
-                        if (amountOfMoney % 50 != 0)
-                        {
-                            Console.WriteLine("Введите сумму кратную 50");
-                            throw new Exception();
-                        }
-                        
-
-                        int valueOf5K = 0;
-                        if (amountOfMoney >= 5000)
-                        {
-
-                            valueOf5K = ((int)amountOfMoney / 5000);
-                            amountOfMoney -= valueOf5K * 5000;
-                        }
-
-                        int valueOf2K = 0;
-                        if (amountOfMoney >= 2000)
-                        {
-
-                            valueOf2K = ((int)amountOfMoney / 2000);
-                            amountOfMoney -= valueOf2K * 2000;
-                        }
-
-                        int valueOf1K = 0;
-                        if (amountOfMoney >= 1000)
-                        {
-
-                            valueOf1K = ((int)amountOfMoney / 1000);
-                            amountOfMoney -= valueOf1K * 1000;
-                        }
-
-                        int valueOf500 = 0;
-                        if (amountOfMoney >= 500)
-                        {
-
-                            valueOf500 = ((int)amountOfMoney / 500);
-                            amountOfMoney -= valueOf500 * 500;
-                        }
-
-                        int valueOf200 = 0;
-                        if (amountOfMoney >= 200)
-                        {
-
-                            valueOf200 = ((int)amountOfMoney / 200);
-                            amountOfMoney -= valueOf200 * 200;
-                        }
-
-                        int valueOf100 = 0;
-                        if (amountOfMoney >= 100)
-                        {
-
-                            valueOf100 = ((int)amountOfMoney / 100);
-                            amountOfMoney -= valueOf100 * 100;
-                        }
-
-                        int valueOf50 = 0;
-                        if (amountOfMoney >= 50)
-                        {
-
-                            valueOf50 = ((int)amountOfMoney / 50);
-                            amountOfMoney -= valueOf50 * 50;
-                        }
-
-
-                        if (valueOf5K > availableBanknots[5000])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        if (valueOf2K > availableBanknots[2000])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        if (valueOf1K > availableBanknots[1000])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        if (valueOf500 > availableBanknots[500])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        if (valueOf200 > availableBanknots[200])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        if (valueOf100 > availableBanknots[100])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        if (valueOf50 > availableBanknots[50])
-                        {
-                            Console.WriteLine("Недостаточно купюр для снятия");
-                            throw new Exception();
-                        }
-                        availableBanknots[5000] -= valueOf5K;
-                        availableBanknots[2000] -= valueOf2K;
-                        availableBanknots[1000] -= valueOf1K;
-                        availableBanknots[500] -= valueOf500;
-                        availableBanknots[200] -= valueOf200;
-                        availableBanknots[100] -= valueOf100;
-                        availableBanknots[50] -= valueOf50;
-
-                        session.getBankCard().withdrawMoney(amountOfMoney);
-                        Console.WriteLine("Деньги успешно сняты, купюры: 5000 рублей: " + valueOf5K +
-                            ", 2000 рублей: " + valueOf2K + ", 1000 рублей: " + valueOf1K +
-                            ", 500 рублей: " + valueOf500 + ", 200 рублей: " + valueOf200 +
-                            ", 100 рублей: " + valueOf100 + ", 50 рублей: " + valueOf50);
-                        stopNewSession(session);
-                    }
-                    else Console.WriteLine("Недостаточно денег для снятия");
-                    stopNewSession(session);
-                }
-                catch (Exception e)
-                {
-
-                }
-                
+                Console.WriteLine("Введите сумму кратную 50");
+                throw new Exception();
             }
+            CashWithDraw(availableBanknots, r, amountOfMoney);
+            r = r.Where(kvp => kvp.Value != 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            session.getBankCard().withdrawMoney(amountOfMoney);
+            return r;
+        }
+
+        void CashWithDraw(Dictionary<int, int> source, Dictionary<int, int> result, int amount)
+        {
+            /// Оставшаяся для выдачи сумма
+            int change;
+
+            int k = 0;
+
+            if (source.Count > result.Count)
+                /// Поиск максимального номинала, который ещё не использовался
+                k = source.Where(kvp => !result.ContainsKey(kvp.Key)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value).Keys.Max();
+            else
+                throw new Exception("Требуемую сумму невозможно выдать");
+            /// Требуемое количество купюр данного номинала
+            KeyValuePair<int, int> sel = new KeyValuePair<int, int>(k, amount / k);
+            /// Если требуемое количество купюр больше, чем имеется в банкомате, 
+            /// то записываются для выдачи все купюры данного номинала.
+            if (sel.Value > source[sel.Key])
+            {
+                change = amount - sel.Key * source[sel.Key];
+                sel = new KeyValuePair<int, int>(sel.Key, source[sel.Key]);
+            }
+            else
+                change = amount - sel.Key * sel.Value;
+
+            /// Если выдана вся сумаа
+            if (change == 0)
+            {
+                result.Add(sel.Key, sel.Value);
+                return;
+            }
+            /// Если оставшаяся сумма меньше минимального номинала купюры
+            if (change < source.Keys.Min())
+            {
+                /// Количество отобранных купюр уменьшаем на 1, чтобы подобрать сумму из
+                /// более мелких купюр
+                sel = new KeyValuePair<int, int>(sel.Key, sel.Value - 1);
+                result.Add(sel.Key, sel.Value);
+                CashWithDraw(source, result, amount - sel.Key * sel.Value);
+                return;
+            }
+
+            source[sel.Key] -= sel.Value;
+            result.Add(sel.Key, sel.Value);
+
+            CashWithDraw(source, result, change);
         }
 
         public void putMoney(Session session)
@@ -248,7 +171,6 @@ namespace OOP_LB_2
                 Double amountOfMoney = Convert.ToDouble(Console.ReadLine());
                 session.getBankCard().addMoney(amountOfMoney);
                 Console.WriteLine("Баланс успешно пополнен");
-                stopNewSession(session);
             }
         }
 
@@ -257,7 +179,6 @@ namespace OOP_LB_2
             if (session.isActive())
             {
                 Console.WriteLine("Ваш баланс равен " + session.getBankCard().getAmountOfMoney());
-                stopNewSession(session);
             }
         }
 
