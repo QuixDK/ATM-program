@@ -169,7 +169,12 @@ namespace OOP_LB_2
             if (session.isActive())
             {
                 Console.WriteLine("Введите сумму для пополнения");
-                Double amountOfMoney = Convert.ToDouble(Console.ReadLine());
+                int amountOfMoney = Convert.ToInt32(Console.ReadLine());
+                if (amountOfMoney % 50 != 0)
+                {
+                    Console.WriteLine("Введите сумму кратную 50");
+                    throw new Exception();
+                }
                 session.getBankCard().addMoney(amountOfMoney);
                 Console.WriteLine("Баланс успешно пополнен");
             }

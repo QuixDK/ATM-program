@@ -464,10 +464,15 @@
                             break;
                     }
                 }
+                catch (InvaidPutMoneyAmountException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Неверная команда");
                 }
+                
             }
 
         }
@@ -516,6 +521,11 @@
         public InvalidSessionException(string message)
             : base(message) { }
     }
-    
+    class InvaidPutMoneyAmountException : Exception
+    {
+        public InvaidPutMoneyAmountException(string message)
+            : base(message) { }
+    }
+
 }
 
