@@ -163,7 +163,6 @@
             }
 
         }
-
         public static void createNewBankCard()
         {
             Random rnd = new Random();
@@ -241,7 +240,6 @@
             }
             
         }
-
         public static Session ATMService()
         {
             try
@@ -319,40 +317,28 @@
             Console.WriteLine("Введите 5 чтобы узнать количество доступных купюр для выдачи");
             Console.WriteLine("Введите 6 чтобы выйти из банкомата");
         }
-
         public static void withdrawMoney()
         {
             try
             {
                 Session session = currentSession;
                 int amount;
-                string val;
                 if (session.isActive())
                 {
-                    do
+                    Console.Write("Введите требуемую сумму: ");
+                    amount = Convert.ToInt32(Console.ReadLine());
+                    Dictionary<int, int> result = currentATM.Withdraw(session, amount);
+                    Console.Write("{0} = ", amount);
+                    foreach (KeyValuePair<int, int> kvp in result)
                     {
-                        Console.Write("Введите требуемую сумму: ");
-                        val = Console.ReadLine();
-                        if (val.Length == 0) return;
+                        Console.Write("{1} купюр по {0}, ", kvp.Key, kvp.Value);
+                    }
 
-                    } while (!int.TryParse(val, out amount));
-                    try
-                    {
-                        Dictionary<int, int> result = currentATM.Withdraw(session, amount);
-                        Console.Write("{0} = ", amount);
-                        foreach (KeyValuePair<int, int> kvp in result)
-                        {
-                            Console.WriteLine("{1} купюр по {0} ", kvp.Key, kvp.Value);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(ex.Message);
-                        Console.ResetColor();
-                    }
-                    Console.WriteLine();
                 }
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine("Введена некорректная сумма");
             }
             catch (Exception ex)
             {
@@ -379,7 +365,6 @@
         {
             currentATM.getAvailableBanknots();
         }
-
         public static void initATM()
         {
             Console.WriteLine("Выберите банкомат из списка");
@@ -400,7 +385,6 @@
                 i++;
             }
         }
-  
         public static void initClient()
         {
             int i = 0;
@@ -440,8 +424,7 @@
                 }
                 i++;
             }
-        } 
-        
+        }   
         public static void setATMMenu()
         {
             bool isTrue = true;
@@ -493,7 +476,6 @@
             Console.Clear();
         }
     }
-
     class BankNameException : Exception
     {
         public BankNameException(string message)

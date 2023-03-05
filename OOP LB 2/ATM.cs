@@ -144,10 +144,11 @@ namespace OOP_LB_2
             if (change == 0)
             {
                 result.Add(sel.Key, sel.Value);
+                source[sel.Key] -= sel.Value;
                 return;
             }
             /// Если оставшаяся сумма меньше минимального номинала купюры
-            if (change < source.Keys.Min())
+            if (change <= source.Keys.Min())
             {
                 /// Количество отобранных купюр уменьшаем на 1, чтобы подобрать сумму из
                 /// более мелких купюр
