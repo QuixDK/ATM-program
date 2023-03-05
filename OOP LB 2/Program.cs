@@ -377,7 +377,6 @@
         }
         public static void getAvailableBanknots()
         {
-            initATM();
             currentATM.getAvailableBanknots();
         }
 
@@ -401,10 +400,7 @@
                 i++;
             }
         }
-        public static void clearConsole()
-        {
-            Console.Clear();
-        }    
+  
         public static void initClient()
         {
             int i = 0;
@@ -492,7 +488,12 @@
             }
 
         }
+        public static void clearConsole()
+        {
+            Console.Clear();
+        }
     }
+
     class BankNameException : Exception
     {
         public BankNameException(string message)
