@@ -11,6 +11,7 @@ namespace OOP_LB_2
         private String bankName;
         private List<BankClient> clientList = new List<BankClient>();
         private List<BankCard> cards= new List<BankCard>();
+        private Dictionary<int, Double> amountOfMoneyOnCard = new Dictionary<int, Double>();
         public Bank(String bankName) 
         { 
             this.bankName = bankName;
@@ -23,7 +24,7 @@ namespace OOP_LB_2
 
         public BankCard createCard(BankClient owner, int cardNumber, Card.Types typeOfCard, int CVV, double amountOfMoney, int pinCode)
         {
-            BankCard bankCard = new BankCard(owner, cardNumber, typeOfCard, CVV, amountOfMoney, pinCode);
+            BankCard bankCard = new BankCard(owner, cardNumber, typeOfCard, CVV, pinCode);
             foreach (BankCard bankCard1 in cards) 
             {
                 if (bankCard1.getCardNumber() == bankCard.getCardNumber())
@@ -32,7 +33,21 @@ namespace OOP_LB_2
                 }
             }
             cards.Add(bankCard);
+            amountOfMoneyOnCard.Add(bankCard.getCardNumber(), amountOfMoney);
             return bankCard;
+        }
+
+        public Double getCardBalance(int cardNumber)
+        {
+            return amountOfMoneyOnCard[cardNumber];
+        }
+        public void addCardBalance(int cardNumber, Double amount)
+        {
+            amountOfMoneyOnCard[cardNumber] = Math.Round((amountOfMoneyOnCard[cardNumber] + amount),2);
+        }
+        public void withdrawCardBalance(int cardNumber, Double amount)
+        {
+            amountOfMoneyOnCard[cardNumber] = Math.Round((amountOfMoneyOnCard[cardNumber] - amount),2);
         }
 
         public void addClient(String fullName, List<BankCard> bankCardNumber, DateTime dateOfEntry, int passportNumber, Double amountOfMoney)
@@ -104,7 +119,7 @@ namespace OOP_LB_2
                         return "Верно";
                     }
                 }
-                return "Неверный код CVV";
+                return "Неверный pin";
             }
             catch(Exception e)
             {

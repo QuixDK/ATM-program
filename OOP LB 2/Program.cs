@@ -513,7 +513,7 @@
     }
     class ATMCountException : Exception
     {
-        public ATMCountException(string message)
+        public ATMCountException(string message) 
             : base(message) { }
     }
     class InvalidSessionException : Exception

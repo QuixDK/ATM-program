@@ -82,7 +82,7 @@ namespace OOP_LB_2
             {
                 Console.WriteLine("Введите сумму для перевода");
                 Double amountOfMoney = Convert.ToDouble(Console.ReadLine());
-                if (session.getBankCard().getAmountOfMoney() >= amountOfMoney)
+                if (bankName.getCardBalance(session.getBankCard().getCardNumber()) >= amountOfMoney)
                 {
                     
                     Console.WriteLine("Введите номер карты для перевода");
@@ -91,9 +91,10 @@ namespace OOP_LB_2
                     {
                         if (card.getCardNumber() == cardNumberForRemittance)
                         {
-                            card.addMoney(amountOfMoney);
+
+                            bankName.addCardBalance(card.getCardNumber(), amountOfMoney);
                             Console.WriteLine("Выбранная карта действительна, перевод осуществлен");
-                            session.getBankCard().withdrawMoney(amountOfMoney);
+                            bankName.withdrawCardBalance(session.getBankCard().getCardNumber(), amountOfMoney);
                         }
                     }
                 }
@@ -112,7 +113,7 @@ namespace OOP_LB_2
             }
             CashWithDraw(availableBanknots, r, amountOfMoney);
             r = r.Where(kvp => kvp.Value != 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            session.getBankCard().withdrawMoney(amountOfMoney);
+            bankName.withdrawCardBalance(session.getBankCard().getCardNumber(), amountOfMoney);
             return r;
         }
 
@@ -136,6 +137,7 @@ namespace OOP_LB_2
             {
                 change = amount - sel.Key * source[sel.Key];
                 sel = new KeyValuePair<int, int>(sel.Key, source[sel.Key]);
+                source[sel.Key] -= sel.Value;
             }
             else
                 change = amount - sel.Key * sel.Value;
@@ -154,6 +156,7 @@ namespace OOP_LB_2
                 /// более мелких купюр
                 sel = new KeyValuePair<int, int>(sel.Key, sel.Value - 1);
                 result.Add(sel.Key, sel.Value);
+                source[sel.Key] -= sel.Value;
                 CashWithDraw(source, result, amount - sel.Key * sel.Value);
                 return;
             }
@@ -175,7 +178,7 @@ namespace OOP_LB_2
                     Console.WriteLine("Введите сумму кратную 50");
                     throw new Exception();
                 }
-                session.getBankCard().addMoney(amountOfMoney);
+                bankName.addCardBalance(session.getBankCard().getCardNumber(),amountOfMoney);
                 Console.WriteLine("Баланс успешно пополнен");
             }
         }
@@ -184,7 +187,7 @@ namespace OOP_LB_2
         {
             if (session.isActive())
             {
-                Console.WriteLine("Ваш баланс равен " + session.getBankCard().getAmountOfMoney());
+                Console.WriteLine("Ваш баланс равен " + bankName.getCardBalance(session.getBankCard().getCardNumber()));
             }
         }
 
