@@ -10,7 +10,7 @@ namespace OOP_LB_2
     internal class ATM
     {
         private Bank bank;
-        private int Id;
+        public int Id { get; private set; }
         private Dictionary<int, int> availableBanknots = new Dictionary<int, int>();
 
         public ATM(Bank bank, int ATMId)
@@ -27,12 +27,7 @@ namespace OOP_LB_2
             availableBanknots.Add(50, Convert.ToInt32(Math.Round(rnd.NextDouble() * 100)));
         }
 
-        public int getID()
-        {
-            return Id;
-        }
-
-        public string getBankName()
+        public string GetBankName()
         {
             return bank.Name;
         }
