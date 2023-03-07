@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace OOP_LB_2
 {
-    
+
     internal class ATM
     {
-        private Bank bankName;
-        private int ATMId;
+        private Bank bank;
+        private int Id;
         private Dictionary<int, int> availableBanknots = new Dictionary<int, int>();
 
-        public ATM(Bank bank, int ATMId) 
+        public ATM(Bank bank, int ATMId)
         {
-            this.bankName = bank; 
-            this. ATMId = ATMId;
+            this.bank = bank;
+            this.Id = ATMId;
             Random rnd = new Random();
             availableBanknots.Add(5000, Convert.ToInt32(Math.Round(rnd.NextDouble() * 100)));
             availableBanknots.Add(2000, Convert.ToInt32(Math.Round(rnd.NextDouble() * 100)));
@@ -29,15 +29,15 @@ namespace OOP_LB_2
 
         public int getID()
         {
-            return ATMId;
+            return Id;
         }
 
-        public String getBankName()
+        public string getBankName()
         {
-            return bankName.getName();
+            return bank.Name;
         }
 
-        public void getAvailableBanknots()
+        public void GetAvailableBanknots()
         {
             foreach (int key in availableBanknots.Keys)
             {
@@ -45,56 +45,56 @@ namespace OOP_LB_2
             }
         }
 
-        public Session startNewSession(int cardNumber, int pinCode)
+        public Session StartNewSession(int cardNumber, int pinCode)
         {
             Session session = new Session(cardNumber, pinCode);
-            if (checkCVV(session.getCardNumber(), session.getPinCode()).Equals("Верно"))
+            if (CheckPin(session.CardNumber, session.CardPinCode).Equals("Верно"))
             {
-                session.setIsAvailable(true);
-                session.setBankCard(bankName.getBankCard(cardNumber));
+                session.SetIsAvailable(true);
+                session.SetBankCard(bank.GetBankCard(cardNumber));
                 return session;
             }
-            else if (checkCVV(session.getCardNumber(), session.getPinCode()).Equals("Неверный pin"))
+            else if (CheckPin(session.CardNumber, session.CardPinCode).Equals("Неверный pin"))
             {
                 Console.WriteLine("Неверный pin");
-                stopNewSession(session);
+                StopNewSession(session);
                 return session;
 
             }
             else
             {
-                Console.WriteLine(checkCVV(session.getCardNumber(), session.getPinCode()));
-                stopNewSession(session);
+                Console.WriteLine(CheckPin(session.CardNumber, session.CardPinCode));
+                StopNewSession(session);
                 return session;
             }
-            
-            
+
+
         }
 
-        public void stopNewSession(Session session)
+        public void StopNewSession(Session session)
         {
-            session.setIsAvailable(false);
+            session.SetIsAvailable(false);
         }
 
-        public void remittance(Session session)
+        public void Remittance(Session session)
         {
-            if (session.isActive())
+            if (session.IsActive())
             {
                 Console.WriteLine("Введите сумму для перевода");
-                Double amountOfMoney = Convert.ToDouble(Console.ReadLine());
-                if (bankName.getCardBalance(session.getBankCard().getCardNumber()) >= amountOfMoney)
+                double amountOfMoney = Convert.ToDouble(Console.ReadLine());
+                if (bank.GetCardBalance(session.BankCard.CardNumber) >= amountOfMoney)
                 {
-                    
+
                     Console.WriteLine("Введите номер карты для перевода");
                     int cardNumberForRemittance = Convert.ToInt32(Console.ReadLine());
-                    foreach (BankCard card in bankName.getBankCards())
+                    foreach (BankCard card in bank.Cards)
                     {
-                        if (card.getCardNumber() == cardNumberForRemittance)
+                        if (card.CardNumber == cardNumberForRemittance)
                         {
 
-                            bankName.addCardBalance(card.getCardNumber(), amountOfMoney);
+                            bank.AddCardBalance(card.CardNumber, amountOfMoney);
                             Console.WriteLine("Выбранная карта действительна, перевод осуществлен");
-                            bankName.withdrawCardBalance(session.getBankCard().getCardNumber(), amountOfMoney);
+                            bank.WithdrawCardBalance(session.BankCard.CardNumber, amountOfMoney);
                         }
                     }
                 }
@@ -113,7 +113,7 @@ namespace OOP_LB_2
             }
             CashWithDraw(availableBanknots, r, amountOfMoney);
             r = r.Where(kvp => kvp.Value != 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            bankName.withdrawCardBalance(session.getBankCard().getCardNumber(), amountOfMoney);
+            bank.WithdrawCardBalance(session.BankCard.CardNumber, amountOfMoney);
             return r;
         }
 
@@ -167,9 +167,9 @@ namespace OOP_LB_2
             CashWithDraw(source, result, change);
         }
 
-        public void putMoney(Session session)
+        public void PutMoney(Session session)
         {
-            if (session.isActive())
+            if (session.IsActive())
             {
                 Console.WriteLine("Введите сумму для пополнения");
                 int amountOfMoney = Convert.ToInt32(Console.ReadLine());
@@ -178,22 +178,22 @@ namespace OOP_LB_2
                     Console.WriteLine("Введите сумму кратную 50");
                     throw new Exception();
                 }
-                bankName.addCardBalance(session.getBankCard().getCardNumber(),amountOfMoney);
+                bank.AddCardBalance(session.BankCard.CardNumber, amountOfMoney);
                 Console.WriteLine("Баланс успешно пополнен");
             }
         }
 
-        public void viewBalance(Session session)
+        public void ViewBalance(Session session)
         {
-            if (session.isActive())
+            if (session.IsActive())
             {
-                Console.WriteLine("Ваш баланс равен " + bankName.getCardBalance(session.getBankCard().getCardNumber()));
+                Console.WriteLine("Ваш баланс равен " + bank.GetCardBalance(session.BankCard.CardNumber));
             }
         }
 
-        public String checkCVV(int cardNumber, int pinCode)
+        public string CheckPin(int cardNumber, int pinCode)
         {
-            String bankAnswer = bankName.checkPinCode(cardNumber, pinCode);
+            string bankAnswer = bank.CheckPinCode(cardNumber, pinCode);
             return bankAnswer;
         }
 

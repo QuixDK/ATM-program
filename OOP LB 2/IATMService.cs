@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace OOP_LB_2
 {
-    internal class Card
+    internal interface IATMService
     {
-        public enum Types { Visa, MasterCard, MIR, MIRGold, MasterCardMass, MasterCardCustom, VisaCustom };
+        void CashWithDraw(Dictionary<int, int> source, Dictionary<int, int> result, int amount);
     }
-
 }

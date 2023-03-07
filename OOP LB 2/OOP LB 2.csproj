@@ -8,4 +8,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\ATM\" />
+    <Folder Include="Domain\BankCard\" />
+    <Folder Include="Infra\Storage\Bank\" />
+    <Folder Include="Infra\Storage\Client\" />
+  </ItemGroup>
+
 </Project>

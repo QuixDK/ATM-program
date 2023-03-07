@@ -8,37 +8,19 @@ namespace OOP_LB_2
 {
     internal class BankCard
     {
-        private BankClient owner;
-        private int cardNumber;
-        private Card.Types typeOfCard;
-        private int CVV;
-        private int pinCode;
+        public BankClient Owner { get; private set; }
+        public int CardNumber { get; private set; }
+        public Card.Types CardType { get; private set; }
+        public int CVV { get; private set; }
+        public int PinCode { get; private set; }
 
         public BankCard(BankClient owner, int cardNumber, Card.Types typeOfCard, int CVV, int pinCode)
         {
-            this.owner = owner;
-            this.cardNumber = cardNumber;
-            this.typeOfCard = typeOfCard;
+            Owner = owner;
+            CardNumber = cardNumber;
+            CardType = typeOfCard;
             this.CVV = CVV;
-            this.pinCode = pinCode;
-        }
-
-        public BankClient getOwner()
-        {
-            return owner;
-        }
-        public int getPinCode()
-        {
-            return pinCode;
-        }
-
-        public int getCardNumber()
-        {
-            return cardNumber;
-        }
-        public Card.Types getCardType()
-        {
-            return typeOfCard;
+            PinCode = pinCode;
         }
 
     }

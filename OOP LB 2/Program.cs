@@ -75,6 +75,7 @@
             Console.WriteLine("Введите 4 чтобы создать новый банкомат");
             Console.WriteLine("Введите 5 чтобы перейти в меню банкомата");
             Console.WriteLine("Введите 6 чтобы посмотреть карты клиента");
+            Console.WriteLine("Введите 0 чтобы очистить консоль");
         }
         public static void createNewBank()
         {
@@ -84,7 +85,7 @@
                 String bankName = Console.ReadLine();
                 foreach (Bank bank in banks)
                 {
-                    if (bank.getName().Equals(bankName))
+                    if (bank.Name.Equals(bankName))
                     {
                         throw new BankNameException("Банк с таким именем уже существует");
                     }
@@ -126,9 +127,9 @@
 
                 int passportNumber = Convert.ToInt32(Console.ReadLine());
 
-                foreach (BankClient client in currentBank.getClientsList())
+                foreach (BankClient client in currentBank.Clients)
                 {
-                    if (client.getPassportNumber() == passportNumber)
+                    if (client.PassportNumber == passportNumber)
                     {
                         throw new PassportNumberException("Клиент с таким паспортом уже существует");
                     }
@@ -136,7 +137,7 @@
 
                 List<BankCard> cards = new List<BankCard>();
 
-                currentBank.addClient(fullName, cards, DateTime.Now, passportNumber, 0);
+                currentBank.AddClient(fullName, cards, DateTime.Now, passportNumber, 0);
 
                 Console.WriteLine("Клиент успешно добавлен");
             }
@@ -174,7 +175,7 @@
                 }
 
                 initBank();
-                if (currentBank.getClientsList().Count == 0)
+                if (currentBank.Clients.Count == 0)
                 {
                     throw new ClientCountException("Чтобы создать карту, нужен хотя бы один клиент банка");
                 }
@@ -187,12 +188,12 @@
                 int pinCode = Convert.ToInt32(Console.ReadLine());
                 int CVV = Convert.ToInt32(Math.Round((rnd.NextDouble() * 1000)));
                 Double amountOfMoney = Math.Round((rnd.NextDouble() * 1000), 2);
-                BankCard bankCard = currentBank.createCard(currentClient, cardNumber, Card.Types.Visa, CVV, amountOfMoney, pinCode);
+                BankCard bankCard = currentBank.CreateCard(currentClient, cardNumber, Card.Types.Visa, CVV, amountOfMoney, pinCode);
                 if (bankCard == null)
                 {
                     throw new BankCardNumberException("Карта с таким номером уже существует");
                 }
-                currentClient.addBankCard(bankCard);
+                currentClient.AddBankCard(bankCard);
                 Console.WriteLine("Карта успешно добавлена");
                 
 
@@ -259,8 +260,8 @@
             int cardNumber = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Введите pin");
             int pinCode = Convert.ToInt32(Console.ReadLine());
-            currentSession = currentATM.startNewSession(cardNumber, pinCode);
-            if (!currentSession.isActive())
+            currentSession = currentATM.StartNewSession(cardNumber, pinCode);
+            if (!currentSession.IsActive())
             {
                 throw new InvalidSessionException("Не удалось запустить новую сессию");
             }
@@ -276,19 +277,19 @@
                     throw new BankCountException("Сначала нужно создать хотя бы один банк");
                 }
                 initBank();
-                if (currentBank.getClientsList().Count == 0)
+                if (currentBank.Clients.Count == 0)
                 {
                     throw new ClientCountException("Чтобы узнать список карт, нужен хотя бы один клиент банка");
                 }
                 Console.WriteLine("Выберите клиента из списка клиентов банка");
                 initClient();
                 int i = 0;
-                List<BankCard> cards = currentClient.getCards();
+                List<BankCard> cards = currentClient.Cards;
                 if (cards.Count != 0)
                 {
-                    foreach (BankCard card in currentClient.getCards())
+                    foreach (BankCard card in currentClient.Cards)
                     {
-                        Console.WriteLine(i + " Номер карты : " + card.getCardNumber());
+                        Console.WriteLine(i + " Номер карты : " + card.CardNumber);
                         i++;
                     }
                 }
@@ -323,7 +324,7 @@
             {
                 Session session = currentSession;
                 int amount;
-                if (session.isActive())
+                if (session.IsActive())
                 {
                     Console.Write("Введите требуемую сумму: ");
                     amount = Convert.ToInt32(Console.ReadLine());
@@ -349,21 +350,21 @@
         public static void putMoney()
         {
             Session session = currentSession;
-            currentATM.putMoney(session);
+            currentATM.PutMoney(session);
         }
         public static void checkBalance()
         {
             Session session = currentSession;
-            currentATM.viewBalance(session);
+            currentATM.ViewBalance(session);
         }
         public static void remittance()
         {
             Session session = currentSession;
-            currentATM.remittance(session);
+            currentATM.Remittance(session);
         }
         public static void getAvailableBanknots()
         {
-            currentATM.getAvailableBanknots();
+            currentATM.GetAvailableBanknots();
         }
         public static void initATM()
         {
@@ -388,15 +389,15 @@
         public static void initClient()
         {
             int i = 0;
-            foreach (BankClient client in currentBank.getClientsList())
+            foreach (BankClient client in currentBank.Clients)
             {
-                Console.WriteLine(i + " " + client.getFullName());
+                Console.WriteLine(i + " " + client.FullName);
                 i++;
             }
             int value = Convert.ToInt32(Console.ReadLine());
             i = 0;
 
-            foreach (BankClient client in currentBank.getClientsList())
+            foreach (BankClient client in currentBank.Clients)
             {
                 if (i == value)
                 {
@@ -411,7 +412,7 @@
             int i = 0;
             foreach (Bank bank in banks)
             {
-                Console.WriteLine(i + " " + bank.getName());
+                Console.WriteLine(i + " " + bank.Name);
                 i++;
             }
             int bankNumber = Convert.ToInt32(Console.ReadLine());
@@ -455,7 +456,7 @@
                         case 6:
                             isTrue = false;
                             clearConsole();
-                            currentATM.stopNewSession(currentSession);
+                            currentATM.StopNewSession(currentSession);
                             sendMenu();
                             break;
                         case 0:

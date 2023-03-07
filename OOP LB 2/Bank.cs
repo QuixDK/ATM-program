@@ -8,129 +8,86 @@ namespace OOP_LB_2
 {
     internal class Bank
     {
-        private String bankName;
-        private List<BankClient> clientList = new List<BankClient>();
-        private List<BankCard> cards= new List<BankCard>();
-        private Dictionary<int, Double> amountOfMoneyOnCard = new Dictionary<int, Double>();
-        public Bank(String bankName) 
-        { 
-            this.bankName = bankName;
+        public string Name { get; private set; }
+        public List<BankClient> Clients { get; private set; } = new();
+        public List<BankCard> Cards { get; private set; } = new();
+        public Dictionary<int, double> CardBalances { get; private set; } = new();
+
+        public Bank(string name)
+        {
+            Name = name;
         }
 
-        public String getName()
+        public BankCard CreateCard(BankClient owner, int cardNumber, Card.Types typeOfCard, int cvv, double amountOfMoney, int pinCode)
         {
-            return bankName;
-        }
-
-        public BankCard createCard(BankClient owner, int cardNumber, Card.Types typeOfCard, int CVV, double amountOfMoney, int pinCode)
-        {
-            BankCard bankCard = new BankCard(owner, cardNumber, typeOfCard, CVV, pinCode);
-            foreach (BankCard bankCard1 in cards) 
+            if (Cards.Any(card => card.CardNumber == cardNumber))
             {
-                if (bankCard1.getCardNumber() == bankCard.getCardNumber())
-                {
-                    return null;
-                }
+                throw new BankCardExistException("Такая карта уже существует");
             }
-            cards.Add(bankCard);
-            amountOfMoneyOnCard.Add(bankCard.getCardNumber(), amountOfMoney);
-            return bankCard;
+
+            var card = new BankCard(owner, cardNumber, typeOfCard, cvv, pinCode);
+            Cards.Add(card);
+            CardBalances[cardNumber] = amountOfMoney;
+            return card;
         }
 
-        public Double getCardBalance(int cardNumber)
+        public double GetCardBalance(int cardNumber)
         {
-            return amountOfMoneyOnCard[cardNumber];
-        }
-        public void addCardBalance(int cardNumber, Double amount)
-        {
-            amountOfMoneyOnCard[cardNumber] = Math.Round((amountOfMoneyOnCard[cardNumber] + amount),2);
-        }
-        public void withdrawCardBalance(int cardNumber, Double amount)
-        {
-            amountOfMoneyOnCard[cardNumber] = Math.Round((amountOfMoneyOnCard[cardNumber] - amount),2);
+            return CardBalances.GetValueOrDefault(cardNumber);
         }
 
-        public void addClient(String fullName, List<BankCard> bankCardNumber, DateTime dateOfEntry, int passportNumber, Double amountOfMoney)
+        public void AddCardBalance(int cardNumber, double amount)
         {
-            BankClient bankClient = new BankClient(fullName, bankCardNumber, dateOfEntry, passportNumber, amountOfMoney);
-            clientList.Add(bankClient);
+            CardBalances[cardNumber] += Math.Round(amount,2);
         }
 
-        public void addBankCard(BankCard bankCard)
+        public void WithdrawCardBalance(int cardNumber, double amount)
         {
-           
-            cards.Add(bankCard);
+            CardBalances[cardNumber] -= Math.Round(amount,2);
         }
 
-        public BankClient getClient(int cardNumber)
+        public void AddClient(string fullName, List<BankCard> bankCardNumber, DateTime dateOfEntry, int passportNumber, double amountOfMoney)
         {
-            foreach (BankCard card in cards)
-            {
-                if (card.getCardNumber() == cardNumber)
-                {
-                    return card.getOwner();
-                    
-                }
-            }
-            return null;
+            var bankClient = new BankClient(fullName, bankCardNumber, dateOfEntry, passportNumber, amountOfMoney);
+            Clients.Add(bankClient);
         }
 
-        public List<BankCard> getBankCards()
+        public BankClient GetClient(int cardNumber)
         {
-            return cards;
+            return Cards.FirstOrDefault(card => card.CardNumber == cardNumber)?.Owner;
         }
 
-        public BankCard getBankCard(int cardNumber) 
+        public BankCard GetBankCard(int cardNumber)
         {
-            BankClient currentClient = getClient(cardNumber);
-            foreach (BankClient client in clientList)
-            {
-                if (client == currentClient)
-                {
-                    foreach (BankCard card in client.getCards())
-                    {
-                        if (card.getCardNumber() == cardNumber)
-                        {
-                            return card;
-                        }
-                    }
-                }
-            }
-            return null;
+            var client = GetClient(cardNumber);
+            return client?.Cards.FirstOrDefault(card => card.CardNumber == cardNumber);
         }
 
-        public String checkPinCode(int cardNumber, int pinCode)
+        public string CheckPinCode(int cardNumber, int pinCode)
         {
             try
             {
-                BankClient bankClient = getClient(cardNumber);
+                var client = GetClient(cardNumber);
 
-                if (bankClient == null)
+                if (client == null)
                 {
                     throw new Exception("Пользователя с такой картой в этом банке не нашлось");
                 }
 
-                List<BankCard> clientCards = bankClient.getCards();
+                var card = client.Cards.FirstOrDefault(c => c.CardNumber == cardNumber && c.PinCode == pinCode);
 
-                foreach (BankCard card in clientCards)
-                {
-                    if (card.getCardNumber() == cardNumber & card.getPinCode() == pinCode)
-                    {
-                        return "Верно";
-                    }
-                }
-                return "Неверный pin";
+                return card != null ? "Верно" : "Неверный pin";
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return e.Message;
             }
         }
 
-        public List<BankClient> getClientsList()
-        {
-            return clientList;
-        }
-
+    }
+    class BankCardExistException : Exception
+    {
+        public BankCardExistException(string message)
+            : base(message) { }
     }
 }

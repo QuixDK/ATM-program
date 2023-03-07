@@ -8,66 +8,24 @@ namespace OOP_LB_2
 {
     internal class BankClient
     {
-        private String fullName;
-        private List<BankCard> cards = new List<BankCard>();
-        private DateTime dateOfEntry;
-        private int passportNumber;
-        private Double amountOfMoney;
-        public BankClient(String fullName, List<BankCard> cards, DateTime dateOfEntry, int passportNumber, Double amountOfMoney) 
+        public string FullName { get; private set; }
+        public List<BankCard> Cards { get; private set; } = new List<BankCard>();
+        public DateTime DateOfEntry { get; private set; }
+        public int PassportNumber { get; private set; }
+        public double AmountOfMoney { get; private set; }
+        public BankClient(string fullName, List<BankCard> cards, DateTime dateOfEntry, int passportNumber, double amountOfMoney)
         {
-            this.fullName = fullName;
-            this.cards = cards;
-            this.dateOfEntry = dateOfEntry;
-            this.passportNumber = passportNumber;
-            this.amountOfMoney = amountOfMoney;
+            FullName = fullName;
+            Cards = cards;
+            DateOfEntry = dateOfEntry;
+            PassportNumber = passportNumber;
+            AmountOfMoney = amountOfMoney;
         }
 
-
-        public String getFullName()
+        public void AddBankCard(BankCard bankCard)
         {
-            return fullName;
-        }
-
-        public List<BankCard> getCards()
-        {
-            
-            return cards;
-        }
-
-        public DateTime getDateOfEntry()
-        {
-            return dateOfEntry;
-        }
-
-        public int getPassportNumber()
-        {
-            return passportNumber;
-        }
-
-        public Double getAmountOfMoney()
-        {
-            return amountOfMoney;
-        }
-
-        public void setFullName(String fullName)
-        {
-            this.fullName = fullName;
-        }
-        public void addBankCard(BankCard bankCard)
-        {
-            this.cards.Add(bankCard);
-        }
-        public void setPassportNumber(int passportNumber)
-        {
-            this.passportNumber = passportNumber;
-        }
-        public void setDateOfEntry(DateTime dateOfEntry)
-        {
-            this.dateOfEntry = dateOfEntry;
-        }
-        public void setAmountOfMoney(Double amountOfMoney)
-        {
-            this.amountOfMoney = amountOfMoney;
+            Cards.Add(bankCard);
         }
     }
+
 }
